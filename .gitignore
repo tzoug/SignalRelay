@@ -1,0 +1,5 @@
+**/src/.env
+**/.vscode/
+**/signal-cli-0.13.2/
+**/src/__pycache__/
+**/src/output.log
