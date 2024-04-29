@@ -77,7 +77,7 @@ def main(env_file_path):
    try:
       loop.run()
    except KeyboardInterrupt:
-      print("Stopping SignalRelay...")
+      print("\nStopping SignalRelay...")
       loop.quit()
 
 if __name__ == "__main__":
