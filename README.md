@@ -1,91 +1,61 @@
-# signal-telegram-forwarding
+# SignalRelay
 
-## Signal Setup
+SignalRelay is a tool designed to forward Signal messages to various messaging platforms, starting with Telegram and with plans to expand to more messaging apps in the future. This README provides comprehensive instructions on setting up Signal-Cli, configuring the destination app (such as Telegram), and running SignalRelay effectively.
 
-### Install Java
+## Table of Contents
+- [Setting up Signal-Cli](#setting-up-signal-cli)
+    - [Install Signal-Cli](#install-signal-cli)
+    - [Linking devices](#linking-devices)
+    - [Configure D-Bus](#configure-d-bus)
+- [Setting up the destination](#setting-up-the-destination)
+    - [Telegram](#telegram)
+    - More on the way...
+- [Running SignalRelay](#running-signalrelay)
+    - [Install Dependencies](#install-dependencies)
+    - [Setup .env File](#setup-env-file)
+    - [Run signal_relay.py](#run-signal_relaypy)
 
-#### On x64
 
-```bash
-# Install openjdk-21-jre
-sudo apt install openjdk-21-jre
+## Setting Up Signal-Cli
 
-# Export JAVA_HOME
-export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
-```
-
-#### On arm/aarch64
-
-https://sdkman.io/install
-
-```bash
-curl -s "https://get.sdkman.io" | bash
-source "$HOME/.sdkman/bin/sdkman-init.sh"
-sdk version
-sdk install java 21.0.2-oracle
-
-# Add the following to your ~/.bashrc
-export JAVACMD=/home/USERNAME/.sdkman/candidates/java/current/bin/java
-export JAVA_HOME=~/.sdkman/candidates/java/current
-export PATH=$JAVA_HOME/bin:$PATH
-export JAVA_LIBRARY_PATH="-Djava.library.path=/usr/java/packages/lib"
-
-# Make sure this is at the end
-
-#THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
-export SDKMAN_DIR="$HOME/.sdkman"
-[[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
-. "$HOME/.cargo/env"
-```
+SignalRelay is built using [Signal-Cli](https://github.com/AsamK/signal-cli).
 
 ### Install Signal-CLI
 
-#### On x64
-Unpack the `tar.gz`
+Follow the [Prerequisites](https://github.com/AsamK/signal-cli/wiki/Quickstart#prerequisites) and [Installation](https://github.com/AsamK/signal-cli/wiki/Quickstart#installation) sections of the Signal-Cli quickstart guide.
 
+You can also add Signal-Cli to your `/bin` directory.
 ```bash
-# Navigate to the /signal-cli-files director and execute
-sudo tar -xvf signal-cli-0.13.2.tar.gz -C /opt
+# You must change the ~/signal-cli/ path to the path where you unpacked the release.
+sudo ln -sf ~/signal-cli/bin/signal-cli /usr/local/bin/
 ```
 
-#### On arm/aarch64
+If you're trying to install the Signal-Cli on an architecture other than amd64, you need to also replace the `libsignal-client-X.XX.X.jar` with the native one. You can follow the [libsignal-client wiki](/wiki/libsignal-client_setup.md).
 
-*If you're on an arm/aarch64 based system you need to modify the `libsignal-client.jar` with the proper `libsignal_jni.so`*
+*Note that SignalRelay was tested on version 0.13.2 of Signal-Cli.*
 
-Pre-built files can be found here: https://github.com/exquo/signal-libs-build/releases. Make sure to get the current version. Check the version number of `/opt/signal-cli-0.13.2/lib/libsignal-client-X.Y.Z.jar/`
+### Linking Devices
 
-```bash
-# Unpack the `tar.gz` with
-tar -xvf libsignal_jni.so-v0.40.1-aarch64-unknown-linux-gnu.tar.gz
+The easient way to link a device is with a QR code. This command will output a QR code in the terminal that can then be scanned with the Signal mobile app (Settings -> Linked devices -> + button).
 
-# Remove the existing libsignal_jni.so
-zip -d /opt/signal-cli-0.13.2/lib/libsignal-client-0.40.1.jar libsignal_jni.so
-
-# Add the new one that was just extracted
-zip /opt/signal-cli-0.13.2/lib/libsignal-client-0.40.1.jar libsignal_jni.so
-```
-
-#### Common Steps
+*You can find more info on the Signal-Cli [linking](https://github.com/AsamK/signal-cli/wiki/Linking-other-devices-%28Provisioning%29) wiki.*
 
 ```bash
-# Add signal-cli to /usr/local/bin
-sudo ln -sf /opt/signal-cli-0.13.2/bin/signal-cli /usr/local/bin/
-
-# Install dependencies (if you will be scanning the QR code when linking a device)
+# Install dependencies
 sudo apt install libpng-dev
 sudo apt install qrencode
-export PATH=$PATH:/usr/bin/
 
-# Link the device
+# Link a new device
 signal-cli link -n "device name" | tee >(xargs -L 1 qrencode -t utf8)
 ```
 
+### Configure D-Bus
 
-### Setup dbus
+You will need to modify the files found in the `SignalRelay/signal-cli-files` directory and copy them to the proper locations.
 
-*All files that should be copied can also be found in the `signal-cli-master/data/` directory.*
+*All files that should be edited/copied can also be found in the [data directory](https://github.com/AsamK/signal-cli/tree/master/data) of the Signal-Cli repo.*
 
-*See https://github.com/AsamK/signal-cli/wiki/DBus-service#system-bus*
+*See the [Signal-Cli D-Bus wiki](https://github.com/AsamK/signal-cli/wiki/DBus-service#system-bus) for additional information.*
 
 #### Modify and copy necessary service files
 
@@ -112,74 +82,63 @@ sudo systemctl enable signal-cli.service
 # Start the service
 sudo systemctl start signal-cli.service
 
-# View the status of the service (should be Active)
-systemctl status signal-cli.service
-
-# To stop the service
-systemctl stop signal-cli.service
+# You can also stop or view the status of the service with the following commands.
+sudo systemctl stop signal-cli.service
+sudo systemctl status signal-cli.service
 ```
 
-## Python Setup
+## Setting Up The Destination
 
-Install Python (if not already installed): `sudo apt install python3`
+In this section you will set up the destination where you want the Signal messages to get forwarded. You can skip to app that you want.
+
+### Telegram
+
+You can follow the [Telegram Wiki](/wiki/telegram_setup.md) to easily setup your Telegram bot.
+
+
+## Running SignalRelay
 
 ### Install Dependencies
 
+- Install Python
+- Install necessary Python libraries
+
 ```bash
 pip install pydbus
-pip install python-telegram-bot
 
-# If you run into a "externally-managed-environment" error (commonly on Raspbery Pi), add the --break-system-packages flag at the end of the pip command.
-# Ex: pip install pydbus --break-system-packages
+# And necessary destination library
+# For example if you're using Telegram as a destination:
+pip install python-telegram-bot
 ```
 
-### Setup .env
+### Setup .env File
 
-1. Navigate to the `src/` directory.
-2. Copy the contents of `.env_template.txt` to a new file called `.env`.
-3. Specify the values for those fields.
-4. Run `python3 telegram.chat_id.py` to get the chat ID of the Telegram bot.
-    - Alternatively, you can go to `https://api.telegram.org/bot<YourBOTToken>/getUpdates`
-5. Add the chat ID from **step 4** to `TELEGRAM_CHAT_ID` field in the `.env` file.
-6. Get the Signal groupID using the `signal-cli listGroups` command.
-    - Copy the ID to the `SIGNAL_GROUP_ID` field in the `.env` file.
+- Copy the contents of `src/.env_template` to a new file in the `config/` directory.
+- Specify the values for those fields.
 
-### Run Python Script
+In order to get the ID of the Signal group you can execute:
+```
+signal-cli -u "phoneNumber" listGroups
+```
+*Sometimes there are group IDs that have `null` as a name. Usually, the names appear once a message is received in that group. You might need to run this command after receiving a message in a specific group.*
 
-#### Using the shell script
+### Run signal_relay.py
 
-The shell script starts the signal-cli.service and runs the python file.
+```bash
+# Run normally
+python3 signal_relay.py path_to_env
 
-*The following paths a relative to the home dir.*
-
-1. Run `./signal-telegram-forwarding/helper/start_receiver.sh`
-    - If it's not executable use `chmod +x ~/signal-telegram-forwarding/helper/start_receiver.sh`
-2. Enter the password to start the services
-
-*You can stop the service you can run `./signal-telegram-forwarding/helper/stop_receiver.sh`*
-
----
-
-#### Manually
-
-6. Run `python3 receive.py`
-   - Can also be done in `tmux`
-       - Install tmux (if not done already): `sudo apt install tmux`
-       - Create a new session: `tmux new -s session_name`
-       - Attach to a session: `tmux attach -d -t session_name` or `tmux attach` (if only 1 session)
-       - Leave the session (still runs): `CTRL + B` then `D`
-       - List sessions: `tmux ls`
-       - Kill a session: `tmux kill-session -t session_name`
-
+# Run as a process
+nohup python3 -u signal_relay.py path_to_env > path_to_log_file &
+```
 
 ## Useful Links
 
-- https://github.com/AsamK/signal-cli/
-- https://github.com/AsamK/signal-cli/wiki/Quickstart
-- https://github.com/AsamK/signal-cli/wiki/Linking-other-devices-%28Provisioning%29
-- https://github.com/AsamK/signal-cli/wiki/DBus-service#system-bus
-- https://fabiobarbero.eu/posts/signalbot/
-- https://github.com/python-telegram-bot/python-telegram-bot
-- https://github.com/AsamK/signal-cli/wiki/Provide-native-lib-for-libsignal
-- https://github.com/exquo/signal-libs-build/
-- https://github.com/exquo/signal-libs-build/releases
+- [Signal-Cli Github](https://github.com/AsamK/signal-cli/)
+- [Signal-Cli Quickstart](https://github.com/AsamK/signal-cli/wiki/Quickstart)
+- [Signal-Cli Linking](https://github.com/AsamK/signal-cli/wiki/Linking-other-devices-%28Provisioning%29)
+- [Signal-Cli D-Bus](https://github.com/AsamK/signal-cli/wiki/DBus-service#system-bus)
+- [Signal Bot Guide](https://fabiobarbero.eu/posts/signalbot/)
+- [Python Telegram Bot](https://github.com/python-telegram-bot/python-telegram-bot)
+- [Signal-Cli Native builds for libsignal](https://github.com/AsamK/signal-cli/wiki/Provide-native-lib-for-libsignal)
+- [Signal libs](https://github.com/exquo/signal-libs-build/)
