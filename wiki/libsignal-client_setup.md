@@ -22,8 +22,8 @@ Make sure to get the current version. Check the version number of `/opt/signal-c
 tar -xvf libsignal_jni.so-v0.40.1-aarch64-unknown-linux-gnu.tar.gz
 
 # Remove the existing libsignal_jni.so
-zip -d /opt/signal-cli-0.13.2/lib/libsignal-client-0.40.1.jar libsignal_jni.so
+zip signal-cli-0.13.7/lib/libsignal-client-0.58.0.jar -d '*signal_jni*'
 
 # Add the new one that was just extracted
-zip /opt/signal-cli-0.13.2/lib/libsignal-client-0.40.1.jar libsignal_jni.so
+zip signal-cli-0.13.7/lib/libsignal-client-0.58.0.jar -uj libsignal_jni.so
 ```
